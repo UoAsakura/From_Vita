@@ -1,7 +1,7 @@
 import csv
 import sys
 import os
-
+error_sign = "❗️"
 eng_alph = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
             'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'}
 rus_alph = {'А', 'Б', 'В', 'Г', 'Д', 'Е', 'Ж', 'З', 'И', 'Й', 'К', 'Л', 'М', 'Н', 'О', 'П', 'Р', 'С', 'Т', 'У', 'Ф', 'Х', 'Ц', 'Ч', 'Ш', 'Щ', 'Ъ', 'Ы', 'Ь', 'Э', 'Ю', 'Я',
@@ -17,6 +17,7 @@ def check_string(s: str) -> dict:
         if (s[i - 1] in eng_alph and s[i] in rus_alph) or (s[i - 1] in rus_alph and s[i] in eng_alph):
             bad_ind[i] = s[i - 1], RUS if ord(s[i - 1]) > 500 else ENG
             bad_ind[i + add_ind] = s[i], RUS if ord(s[i]) > 500 else ENG
+
     return bad_ind
 
 
@@ -66,6 +67,19 @@ def main():
             # Добавляем значение для новой колонки
             row[new_column] = check_string(row[columns_to_read])  # Замените 'NewValue' на ваше значение
             if row[new_column]:
+                new_string = ""
+                flag = True
+                for j in range(len(row[columns_to_read])-len(row[new_column])):
+                    if flag == True:
+                        if j + 1 in row[new_column]:
+                            new_string += error_sign + row[columns_to_read][j:j+2] + error_sign
+                            flag = False
+                        else:
+                            new_string += row[columns_to_read][j]
+                    else:
+                        flag = True
+                row[columns_to_read] = new_string
+                # print(new_string)
                 row[total_column] = i + 2
                 # Записываем строку с новой колонкой в новый файл
                 csv_writer.writerow({col: row.get(col, '') for col in all_columns})
