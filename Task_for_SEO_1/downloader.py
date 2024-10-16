@@ -12,14 +12,18 @@ def load_csv():
         title="Выберите csv файл"
     )
     headers = pd.read_csv(read_file_path, nrows=0).columns.tolist()
-    front.choise_column_window(headers, read_file_path)
+    front.choise_column_window(headers, read_file_path, "csv")
 
 
 # Функция для сохранения CSV-файла
 def save_csv(total_headers, read_file_path):
     global data_csv
-    data_csv = pd.read_csv(read_file_path, usecols=[total_headers[0]])
-    new_data = calculations.calc_column(total_headers, data_csv)
+    temporary_data = []
+    for i in total_headers:
+        data_csv = pd.read_csv(read_file_path, usecols=[i])
+        temporary_data.append(calculations.calc_column([i], data_csv))
+    res_data = pd.concat([i for i in temporary_data], axis=1)
+
     if 'data_csv' in globals():  # Проверка, загружены ли данные
         # Открытие диалога для сохранения файла
         file_path = filedialog.asksaveasfilename(
@@ -30,7 +34,7 @@ def save_csv(total_headers, read_file_path):
         if file_path:
             try:
                 # Сохранение данных в новый файл
-                new_data.to_csv(file_path, index=False)
+                res_data.to_csv(file_path, index=False)
                 messagebox.showinfo("Успех", "Файл успешно сохранен!")
             except Exception as e:
                 messagebox.showerror("Ошибка", f"Ошибка при сохранении файла:\n{e}")
@@ -38,18 +42,39 @@ def save_csv(total_headers, read_file_path):
         messagebox.showwarning("Предупреждение", "Сначала загрузите данные.")
 
 
-# Функция для загрузки и обработки файла CSV
+# Функция для загрузки и обработки файла XLSX
 def load_xlsx():
     global data_xlsx  # Глобальная переменная для хранения данных xlsx
-    file_path = filedialog.askopenfilename(
-        filetypes=[("CSV files", "*.xlsx")],
+    read_file_path = filedialog.askopenfilename(
+        filetypes=[("XLSX files", "*.xlsx")],
         title="Выберите xlsx файл"
     )
-    headers = pd.read_csv(file_path, nrows=0).columns.tolist()
-    print(headers)
+    df = pd.read_excel(read_file_path, nrows=0)
+    headers = df.columns.tolist() # Получаем заголовки как список
+    front.choise_column_window(headers, read_file_path, "xlsx")
 
-    column_name = headers[
-        int(input(f"Выберите колонку: {[f"{i} - {name}" for i, name in enumerate(headers, start=0)]}"))]
-    data = pd.read_csv(file_path, usecols=[column_name])
 
-    print(data)
+# Функция для сохранения CSV-файла
+def save_xlsx(total_headers, read_file_path):
+    global data_xlsx
+    temporary_data = []
+    for i in total_headers:
+        data_xlsx = pd.read_excel(read_file_path, usecols=[i])
+        temporary_data.append(calculations.calc_column([i], data_xlsx))
+    res_data = pd.concat([i for i in temporary_data], axis=1)
+    if 'data_xlsx' in globals():  # Проверка, загружены ли данные
+        # Открытие диалога для сохранения файла
+        file_path = filedialog.asksaveasfilename(
+            defaultextension=".xlsx",
+            filetypes=[("Excel файлы", "*.xlsx"), ("Все файлы", "*.*")],
+            title="Сохраните XLSX файл"
+        )
+        if file_path:
+            try:
+                # Сохранение данных в новый файл
+                res_data.to_excel(file_path, index=False)
+                messagebox.showinfo("Успех", "Файл успешно сохранен!")
+            except Exception as e:
+                messagebox.showerror("Ошибка", f"Ошибка при сохранении файла:\n{e}")
+    else:
+        messagebox.showwarning("Предупреждение", "Сначала загрузите данные.")

@@ -32,11 +32,23 @@ def calc_column(name_headers: list[str], data_csv: DataFrame):
             place_in_column: []}
     # Чтение и запись данных с добавлением новой колонки
     for i, row in enumerate(data_csv[name_headers[0]], start=2):
-        if not isinstance(row, str):
+        if not isinstance(row, str): # Проверка на не пустую строку.
             continue
-        var = check_string(row)
-        if var:
-            data[number_column].append(i)
+        var = check_string(row) # Словарь с ошибками.
+        if var: # Если словарь не пустой, то начинаем цикл по генерации новой строки с подстветкой мест ошибок.
+            new_string = "" # Создаём новую строку с подсветкой неточностей.
+            flag = True
+            for j in range(len(row)):
+                if flag == True:
+                    if j + 1 in var:
+                        new_string += error_sign + row[j:j + 2] + error_sign
+                        flag = False
+                    else:
+                        new_string += row[j]
+                else:
+                    flag = True
+            row = new_string
+            data[number_column].append(int(i))
             data[name_headers[0]].append(row)
             data[place_in_column].append(var)
 

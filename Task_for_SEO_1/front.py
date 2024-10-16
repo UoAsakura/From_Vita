@@ -1,7 +1,8 @@
 
 import downloader
 import tkinter as tk
-
+from PIL import Image, ImageTk
+from time import sleep
 
 # Функция для центрирования окна
 def center_window(window, width, height):
@@ -16,54 +17,83 @@ def center_window(window, width, height):
 
 
 # Фнукция для выбора колонок.
-def choise_column_window(args, read_file_path):
+def choise_column_window(args, read_file_path, format):
     new_window = tk.Toplevel()  # Создание нового окна
     # Задаем желаемые размеры окна
     window_width = 400; window_height = len(args) * 50 if len(args) > 100 else 500
     center_window(new_window, window_width, window_height)
+    # Загружаем изображение (необходимо чтобы оно было в одном каталоге с программой или указать полный путь)
+    image = Image.open("static/sunset.jpg")
+    # Преобразуем изображение для использования в tkinter
+    bg_image = ImageTk.PhotoImage(image)
+    # Создаем Label, который будет фоном, и устанавливаем изображение
+    background_label = tk.Label(new_window, image=bg_image)
+    background_label.place(relwidth=1, relheight=1)  # Располагаем его на весь размер окна
+    # Чтобы изображение не удалилось при сборке мусора, сохраняем его ссылку
+    background_label.image = bg_image
 
     def print_selection():
-        selection = lbox.curselection()
-        # print([lbox.get(i) for i in selection])
-        # print(selection)
-        downloader.save_csv([lbox.get(i) for i in selection], read_file_path)
+        selection = lbox.curselection() # Список выбраных колонок.
+        if [lbox.get(i) for i in selection]:
+            match format:
+                case "csv":
+                    downloader.save_csv([lbox.get(i) for i in selection], read_file_path)
+                case "xlsx":
+                    downloader.save_xlsx([lbox.get(i) for i in selection], read_file_path)
+            new_window.destroy() # Закрытие окна после записи нового файла.
+        else:
+            tk.Label(new_window, text="Ни одна из колонок не выбрана!", font=("Arial", 12),).pack()
 
     new_window.title("Выбор колонок")  # Заголовок окна
-    tk.Label(new_window, text="Все колонки из файла:").pack(pady=5)
+    tk.Label(new_window, text="Все колонки из файла:", font=("Arial", 11),).pack()
+    # Список полей для выбора с возможностью множественного выбора.
     lbox = tk.Listbox(new_window, width=20, height=len(args) + 1, selectmode=tk.MULTIPLE)
-    lbox.pack()
+    lbox.pack(pady=10)
+
     for i, name in enumerate(args):
         lbox.insert(i, name)
-    return_data = tk.Button(new_window, text="Выбрать колонки", command=print_selection).pack(pady=10)
-    # for i, name in enumerate(args):
-    #     tk.Label(new_window, text=f"{i}.{name}").pack()
-    #
-    # def get_vars():
-    #     if not select_columns.get():
-    #         tk.Label(new_window, text="Введите номер(а) колонок").pack()
-    #     elif not all(i.isdigit() for i in select_columns.get().split()):
-    #         tk.Label(new_window, text="Введите номер(а) колонок через пробел").pack()
-    #     else:
-    #         # result = select_columns.get()
-    #         downloader.save_csv()
-    #
-    # select_columns = tk.Entry(new_window)
-    # select_columns.pack(pady=5)
-    # tk.Button(new_window, text="Выбрать", command=get_vars).pack(pady=5)
+    tk.Button(new_window,
+              text="Выбрать колонки",
+              font=("Arial", 12),
+              bg="lightblue",
+              command=print_selection).pack(pady=10)
+
+
 
 
 # Функция для развёртывания главного окна.
 def create_open_window():
     root = tk.Tk()  # Создаем главное окно приложения
     # Задаем желаемые размеры окна
-    window_width = 400; window_height = 300
+    window_width = 600; window_height = 300
     center_window(root, window_width, window_height)
     root.title("Обработчик файлов")  # Заголовок окна
+
+    # Загружаем изображение (необходимо чтобы оно было в одном каталоге с программой или указать полный путь)
+    image = Image.open("static/sea.jpg")
+    # Преобразуем изображение для использования в tkinter
+    bg_image = ImageTk.PhotoImage(image)
+    # Создаем Label, который будет фоном, и устанавливаем изображение
+    background_label = tk.Label(root, image=bg_image)
+    background_label.place(relwidth=1, relheight=1)  # Располагаем его на весь размер окна
+    # Чтобы изображение не удалилось при сборке мусора, сохраняем его ссылку
+    background_label.image = bg_image
+
     # Начальное окно приветствия.
-    tk.Label(root, text="Добро пожаловать! \n Выберите тип файла:").pack()
+    tk.Label(root, text="Добро пожаловать! \n Выберите тип файла:", font=("Arial", 14, "bold")).pack()
     # Создаем кнопку для загрузки CSV
-    load_button_csv = tk.Button(root, text="Загрузить csv", command=downloader.load_csv).pack(pady=10)
-    load_button_xlsx = tk.Button(root, text="Загрузить xlsx", command=downloader.load_xlsx).pack(pady=10)
+    load_button_csv = tk.Button(root,
+                                text="Загрузить csv ",
+                                font=("Arial", 14),
+                                bg="lightblue",
+                                command=downloader.load_csv).pack(pady=10)
+    load_button_xlsx = tk.Button(root,
+                                 text="Загрузить xlsx",
+                                 font=("Arial", 14),
+                                 bg="lightblue",
+                                 command=downloader.load_xlsx).pack(pady=10)
 
     # Запуск GUI
     root.mainloop()
+
+
